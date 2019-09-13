@@ -62,21 +62,40 @@ namespace Scheduability
             GenerateReport(taskSet, isTaskScheduable, fileName);
         }
 
+        [Fact]
+        public void Test1()
+        {
+            var taskSet = new List<Task>
+            {
+                new Task {ExecutionTime = 2, Period = 8, Id = 'A'},
+                new Task {ExecutionTime = 2, Period = 16, Id = 'B'},
+                new Task {ExecutionTime = 12, Period = 24, Id = 'C'},
+                new Task {ExecutionTime = 6, Period = 48, Id = 'D'}
+            };
+            
+            taskSet.ForEach(o => o.CalcUtilization());
+            
+            var rateMonotonic = new RateMonotonic();
+            var isTaskScheduable = rateMonotonic.IsTaskScheduleable(taskSet);
+            var fileName = "Task4.txt";
+            GenerateReport(taskSet, isTaskScheduable, fileName);
+        }
+        
         private void GenerateReport(List<Task> taskSet, bool isTaskScheduable, string fileName)
         {
             string docPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), fileName);
             using (var outputFile = new StreamWriter(docPath))
             {
-                
-                outputFile.WriteLine($"Task set is scheduable {isTaskScheduable}");
+                var scheduableString = isTaskScheduable? "scheduable":"not scheduable";
+                outputFile.WriteLine($"Task set is {scheduableString}");
                 outputFile.WriteLine($"Task set has a total system utilization of {taskSet.Sum(o => o.Utilization)}");
 
                 foreach (var task in taskSet)
                 {
-                    outputFile.WriteLine($"Task {task.Id} has a response time of {task.ResponseTime} - it has deadline/period of {task.Period}. The response time is acceptable {task.ResponseTime <= task.Period }");
+                    var acceptableString = task.ResponseTime <= task.Period ? "acceptable" : "not acceptable";
+                    outputFile.WriteLine($"Task {task.Id} has a response time of {task.ResponseTime} - it has deadline/period of {task.Period}. The response time is acceptable {acceptableString}");
                 }
             }
-            
         }
     }
 }
