@@ -20,10 +20,10 @@ namespace Scheduability
             
             taskSet.ForEach(o => o.CalcUtilization());
             
-            var rateMonotonic = new RateMonotonic();
-            var isTaskScheduleable = rateMonotonic.IsTaskScheduleable(taskSet);
+            var rateMonotonic = new RateMonotonic(taskSet);
             var fileName = "Task1.txt";
-            GenerateReport(taskSet, isTaskScheduleable, fileName);
+
+            rateMonotonic.PerformRateMonotonicAnalysis(fileName);
         }
         
         [Fact]
@@ -37,11 +37,10 @@ namespace Scheduability
             };
             
             taskSet.ForEach(o => o.CalcUtilization());
-            
-            var rateMonotonic = new RateMonotonic();
-            var isTaskScheduleable = rateMonotonic.IsTaskScheduleable(taskSet);
             var fileName = "Task2.txt";
-            GenerateReport(taskSet, isTaskScheduleable, fileName);
+
+            var rateMonotonic = new RateMonotonic(taskSet);
+            rateMonotonic.PerformRateMonotonicAnalysis(fileName);
         }
         
         [Fact]
@@ -55,11 +54,9 @@ namespace Scheduability
             };
             
             taskSet.ForEach(o => o.CalcUtilization());
-            
-            var rateMonotonic = new RateMonotonic();
-            var isTaskScheduable = rateMonotonic.IsTaskScheduleable(taskSet);
             var fileName = "Task3.txt";
-            GenerateReport(taskSet, isTaskScheduable, fileName);
+            var rateMonotonic = new RateMonotonic(taskSet);
+            rateMonotonic.PerformRateMonotonicAnalysis(fileName);
         }
 
         [Fact]
@@ -72,30 +69,14 @@ namespace Scheduability
                 new Task {ExecutionTime = 12, Period = 24, Id = 'C'},
                 new Task {ExecutionTime = 6, Period = 48, Id = 'D'}
             };
-            
+            var fileName = "Task4.txt";
+ 
             taskSet.ForEach(o => o.CalcUtilization());
             
-            var rateMonotonic = new RateMonotonic();
-            var isTaskScheduable = rateMonotonic.IsTaskScheduleable(taskSet);
-            var fileName = "Task4.txt";
-            GenerateReport(taskSet, isTaskScheduable, fileName);
+            var rateMonotonic = new RateMonotonic(taskSet);
+            rateMonotonic.PerformRateMonotonicAnalysis(fileName);
         }
         
-        private void GenerateReport(List<Task> taskSet, bool isTaskScheduable, string fileName)
-        {
-            string docPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), fileName);
-            using (var outputFile = new StreamWriter(docPath))
-            {
-                var scheduableString = isTaskScheduable? "scheduable":"not scheduable";
-                outputFile.WriteLine($"Task set is {scheduableString}");
-                outputFile.WriteLine($"Task set has a total system utilization of {taskSet.Sum(o => o.Utilization)}");
-
-                foreach (var task in taskSet)
-                {
-                    var acceptableString = task.ResponseTime <= task.Period ? "acceptable" : "not acceptable";
-                    outputFile.WriteLine($"Task {task.Id} has a response time of {task.ResponseTime} - it has deadline/period of {task.Period}. The response time is acceptable {acceptableString}");
-                }
-            }
-        }
+ 
     }
 }
