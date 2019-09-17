@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace Scheduability
+namespace Schedule
 {
     public class RateMonotonic
     {
@@ -14,6 +15,7 @@ namespace Scheduability
         {
             this.taskSet = taskSet;
             IsSchedulable = false;
+            Debug.Assert(this.taskSet.TrueForAll(o => o.Offset == 0), "All task should have the same offset");
         }
 
         public bool PerformRateMonotonicAnalysis(string fileName)
@@ -54,7 +56,7 @@ namespace Scheduability
                 foreach (var task in taskSet)
                 {
                     var acceptableString = task.ResponseTime <= task.Period ? "acceptable" : "not acceptable";
-                    outputFile.WriteLine($"Task {task.Id} has a response time of {task.ResponseTime} - it has deadline/period of {task.Period}. The response time is acceptable {acceptableString}");
+                    outputFile.WriteLine($"Task {task.Id} has a response time of {task.ResponseTime} - it has deadline/period of {task.Period}. The response time is {acceptableString}");
                 }
             }
         }
@@ -63,7 +65,7 @@ namespace Scheduability
         {
             foreach (var task in taskSet)
             {
-                var interruptingTasks = taskSet.SkipWhile(o => o == task).Where(o => o.Priority < task.Priority).ToList();
+                var interruptingTasks = taskSet.SkipWhile(o => o == task).Where(o => o.StaticPriority < task.StaticPriority).ToList();
                 var responseTime = CalculateResponseTime(task, interruptingTasks);
                 task.ResponseTime = responseTime;
             }
@@ -116,7 +118,7 @@ namespace Scheduability
             var priority = 1;
             foreach (var task in taskSet.OrderBy(o => o.Period))
             {
-                task.Priority = priority;
+                task.StaticPriority = priority;
                 priority++;
             }
         }
