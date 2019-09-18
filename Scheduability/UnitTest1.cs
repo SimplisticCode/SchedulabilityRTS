@@ -109,7 +109,7 @@ namespace Scheduability
             Assert.Equal(taskSet.Single(o => o.Id == '8').BlockingTime, 0);
             Assert.Equal(taskSet.Single(o => o.Id == '9').BlockingTime, 0);
             
-            ResponseTimeAnalysis.WorstCaseStartTime(taskSet);
+            ResponseTimeAnalysis.WorstCaseStartTimeAnalysis(taskSet);
             
             Assert.Equal(taskSet.Single(o => o.Id == '1').StartTimeWorstCase, 0);
             Assert.Equal(taskSet.Single(o => o.Id == '2').StartTimeWorstCase, 5);
@@ -121,6 +121,27 @@ namespace Scheduability
             Assert.Equal(taskSet.Single(o => o.Id == '8').StartTimeWorstCase, 59);
             Assert.Equal(taskSet.Single(o => o.Id == '9').StartTimeWorstCase, 74);
             
+            ResponseTimeAnalysis.WorstCaseFinishTime(taskSet);
+            Assert.Equal(taskSet.Single(o => o.Id == '1').FinishTimeWorstCase, 5);
+            Assert.Equal(taskSet.Single(o => o.Id == '2').FinishTimeWorstCase, 10);
+            Assert.Equal(taskSet.Single(o => o.Id == '3').FinishTimeWorstCase, 17);
+            Assert.Equal(taskSet.Single(o => o.Id == '4').FinishTimeWorstCase, 24);
+            Assert.Equal(taskSet.Single(o => o.Id == '5').FinishTimeWorstCase, 34);
+            Assert.Equal(taskSet.Single(o => o.Id == '6').FinishTimeWorstCase, 42);
+            Assert.Equal(taskSet.Single(o => o.Id == '7').FinishTimeWorstCase, 59);
+            Assert.Equal(taskSet.Single(o => o.Id == '8').FinishTimeWorstCase, 74);
+            Assert.Equal(taskSet.Single(o => o.Id == '9').FinishTimeWorstCase, 96); 
+            
+            ResponseTimeAnalysis.WorstCaseResponseTimeAnalysis(taskSet);
+            Assert.Equal(taskSet.Single(o => o.Id == '1').WorstCaseRunTime, 5);
+            Assert.Equal(taskSet.Single(o => o.Id == '2').WorstCaseRunTime, 10);
+            Assert.Equal(taskSet.Single(o => o.Id == '3').WorstCaseRunTime, 17);
+            Assert.Equal(taskSet.Single(o => o.Id == '4').WorstCaseRunTime, 24);
+            Assert.Equal(taskSet.Single(o => o.Id == '5').WorstCaseRunTime, 34);
+            Assert.Equal(taskSet.Single(o => o.Id == '6').WorstCaseRunTime, 42);
+            Assert.Equal(taskSet.Single(o => o.Id == '7').WorstCaseRunTime, 59);
+            Assert.Equal(taskSet.Single(o => o.Id == '8').WorstCaseRunTime, 74);
+            Assert.Equal(taskSet.Single(o => o.Id == '9').WorstCaseRunTime, 96); 
         }
 
         [Fact]
@@ -152,7 +173,7 @@ namespace Scheduability
             Assert.Equal(taskSet.Single(o => o.Id == '8').BlockingTime, 15);
             Assert.Equal(taskSet.Single(o => o.Id == '9').BlockingTime, 0);
             
-            ResponseTimeAnalysis.WorstCaseStartTime(taskSet);
+            ResponseTimeAnalysis.WorstCaseStartTimeAnalysis(taskSet);
             
             Assert.Equal(taskSet.Single(o => o.Id == '1').StartTimeWorstCase, 15);
             Assert.Equal(taskSet.Single(o => o.Id == '2').StartTimeWorstCase, 20);
@@ -165,7 +186,91 @@ namespace Scheduability
             Assert.Equal(taskSet.Single(o => o.Id == '9').StartTimeWorstCase, 74);
             
             ResponseTimeAnalysis.WorstCaseFinishTime(taskSet);
+            Assert.Equal(taskSet.Single(o => o.Id == '1').FinishTimeWorstCase, 20);
+            Assert.Equal(taskSet.Single(o => o.Id == '2').FinishTimeWorstCase, 25);
+            Assert.Equal(taskSet.Single(o => o.Id == '3').FinishTimeWorstCase, 32);
+            Assert.Equal(taskSet.Single(o => o.Id == '4').FinishTimeWorstCase, 39);
+            Assert.Equal(taskSet.Single(o => o.Id == '5').FinishTimeWorstCase, 49);
+            Assert.Equal(taskSet.Single(o => o.Id == '6').FinishTimeWorstCase, 57);
+            Assert.Equal(taskSet.Single(o => o.Id == '7').FinishTimeWorstCase, 79);
+            Assert.Equal(taskSet.Single(o => o.Id == '8').FinishTimeWorstCase, 89);
+            Assert.Equal(taskSet.Single(o => o.Id == '9').FinishTimeWorstCase, 89); 
             
+            ResponseTimeAnalysis.WorstCaseResponseTimeAnalysis(taskSet);
+            Assert.Equal(taskSet.Single(o => o.Id == '1').WorstCaseRunTime, 20);
+            Assert.Equal(taskSet.Single(o => o.Id == '2').WorstCaseRunTime, 25);
+            Assert.Equal(taskSet.Single(o => o.Id == '3').WorstCaseRunTime, 32);
+            Assert.Equal(taskSet.Single(o => o.Id == '4').WorstCaseRunTime, 39);
+            Assert.Equal(taskSet.Single(o => o.Id == '5').WorstCaseRunTime, 49);
+            Assert.Equal(taskSet.Single(o => o.Id == '6').WorstCaseRunTime, 57);
+            Assert.Equal(taskSet.Single(o => o.Id == '7').WorstCaseRunTime, 79);
+            Assert.Equal(taskSet.Single(o => o.Id == '8').WorstCaseRunTime, 89);
+            Assert.Equal(taskSet.Single(o => o.Id == '9').WorstCaseRunTime, 89); 
+        } 
+        
+        [Fact]
+        public void Test_BlockingTime2()
+        {
+            var taskSet = new List<Task>
+            {
+                new Task {ExecutionTime = 5, Period = 50, Id = '1', Deadline = 15, StaticPriority = 9, DynamicPriority = 9},
+                new Task {ExecutionTime = 5, Period = 60, Id = '2', Deadline = 25, StaticPriority = 8, DynamicPriority = 8},
+                new Task {ExecutionTime = 7, Period = 80, Id = '3', Deadline = 30, StaticPriority = 7, DynamicPriority = 7},
+                new Task {ExecutionTime = 7, Period = 200, Id = '4', Deadline = 40, StaticPriority =6, DynamicPriority = 6},
+                new Task {ExecutionTime = 10, Period = 200, Id = '5', Deadline = 50, StaticPriority = 5, DynamicPriority = 5},
+                new Task {ExecutionTime = 8, Period = 200, Id = '6', Deadline = 60, StaticPriority = 4, DynamicPriority = 4},
+                new Task {ExecutionTime = 12, Period = 220, Id = '7', Deadline = 70, StaticPriority = 3, DynamicPriority = 8},
+                new Task {ExecutionTime = 10, Period = 230, Id = '8', Deadline = 70, StaticPriority = 2, DynamicPriority = 8},
+                new Task {ExecutionTime = 15, Period = 240, Id = '9', Deadline = 100, StaticPriority = 1, DynamicPriority =1}
+            };
+            taskSet.ForEach(o => o.CalcUtilization());
+            
+            ResponseTimeAnalysis.blockingTime(taskSet);
+            
+            Assert.Equal(taskSet.Single(o => o.Id == '1').BlockingTime, 0);
+            Assert.Equal(taskSet.Single(o => o.Id == '2').BlockingTime, 12);
+            Assert.Equal(taskSet.Single(o => o.Id == '3').BlockingTime, 12);
+            Assert.Equal(taskSet.Single(o => o.Id == '4').BlockingTime, 12);
+            Assert.Equal(taskSet.Single(o => o.Id == '5').BlockingTime, 12);
+            Assert.Equal(taskSet.Single(o => o.Id == '6').BlockingTime, 12);
+            Assert.Equal(taskSet.Single(o => o.Id == '7').BlockingTime, 10);
+            Assert.Equal(taskSet.Single(o => o.Id == '8').BlockingTime, 0);
+            Assert.Equal(taskSet.Single(o => o.Id == '9').BlockingTime, 0);
+            
+            ResponseTimeAnalysis.WorstCaseStartTimeAnalysis(taskSet);
+            
+            Assert.Equal(taskSet.Single(o => o.Id == '1').StartTimeWorstCase, 0);
+            Assert.Equal(taskSet.Single(o => o.Id == '2').StartTimeWorstCase, 17);
+            Assert.Equal(taskSet.Single(o => o.Id == '3').StartTimeWorstCase, 22);
+            Assert.Equal(taskSet.Single(o => o.Id == '4').StartTimeWorstCase, 29);
+            Assert.Equal(taskSet.Single(o => o.Id == '5').StartTimeWorstCase, 36);
+            Assert.Equal(taskSet.Single(o => o.Id == '6').StartTimeWorstCase, 46);
+            Assert.Equal(taskSet.Single(o => o.Id == '7').StartTimeWorstCase, 57);
+            Assert.Equal(taskSet.Single(o => o.Id == '8').StartTimeWorstCase, 59);
+            Assert.Equal(taskSet.Single(o => o.Id == '9').StartTimeWorstCase, 74);
+            
+            ResponseTimeAnalysis.WorstCaseFinishTime(taskSet);
+            Assert.Equal(taskSet.Single(o => o.Id == '1').FinishTimeWorstCase, 5);
+            Assert.Equal(taskSet.Single(o => o.Id == '2').FinishTimeWorstCase, 22);
+            Assert.Equal(taskSet.Single(o => o.Id == '3').FinishTimeWorstCase, 29);
+            Assert.Equal(taskSet.Single(o => o.Id == '4').FinishTimeWorstCase, 36);
+            Assert.Equal(taskSet.Single(o => o.Id == '5').FinishTimeWorstCase, 46);
+            Assert.Equal(taskSet.Single(o => o.Id == '6').FinishTimeWorstCase, 59);
+            Assert.Equal(taskSet.Single(o => o.Id == '7').FinishTimeWorstCase, 69);
+            Assert.Equal(taskSet.Single(o => o.Id == '8').FinishTimeWorstCase, 69);
+            Assert.Equal(taskSet.Single(o => o.Id == '9').FinishTimeWorstCase, 96); 
+            
+            ResponseTimeAnalysis.WorstCaseResponseTimeAnalysis(taskSet);
+            
+            Assert.Equal(taskSet.Single(o => o.Id == '1').WorstCaseRunTime, 5);
+            Assert.Equal(taskSet.Single(o => o.Id == '2').WorstCaseRunTime, 22);
+            Assert.Equal(taskSet.Single(o => o.Id == '3').WorstCaseRunTime, 29);
+            Assert.Equal(taskSet.Single(o => o.Id == '4').WorstCaseRunTime, 36);
+            Assert.Equal(taskSet.Single(o => o.Id == '5').WorstCaseRunTime, 46);
+            Assert.Equal(taskSet.Single(o => o.Id == '6').WorstCaseRunTime, 59);
+            Assert.Equal(taskSet.Single(o => o.Id == '7').WorstCaseRunTime, 69);
+            Assert.Equal(taskSet.Single(o => o.Id == '8').WorstCaseRunTime, 69);
+            Assert.Equal(taskSet.Single(o => o.Id == '9').WorstCaseRunTime, 96); 
         } 
     }
 }

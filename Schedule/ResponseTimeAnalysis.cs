@@ -3,19 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Schedule
 {
     public class ResponseTimeAnalysis
     {
         //Static and dynamic priority
-        public void runTimeModel(List<Task> taskSet)
-        {
-            foreach (var task in taskSet.OrderBy(o => o.StaticPriority))
-            {
-                //task.WorstTimeResponseTime = 
-            }
-        }
 
         //Blocking time is if a lower priority task is running and cannot be preempted
         public static void blockingTime(List<Task> taskSet)
@@ -28,15 +22,11 @@ namespace Schedule
             }
         }
 
-        public static void WorstCaseStartTime(List<Task> taskSet)
+        public static void WorstCaseStartTimeAnalysis(List<Task> taskSet)
         {
             foreach (var task in taskSet.OrderBy(o => o.StaticPriority))
             {
-                task.StartTimeWorstCase = task.BlockingTime;
-                foreach (var taskWithHigherPriority in taskSet.Where(o => o.StaticPriority > task.StaticPriority))
-                {
-                    task.StartTimeWorstCase += (1 + 0) * taskWithHigherPriority.ExecutionTime;
-                }
+                task.StartTimeWorstCase = WorstCaseStartTime(task, taskSet, 1);
             }
         }
 
@@ -44,18 +34,19 @@ namespace Schedule
         {
             foreach (var task in taskSet.OrderBy(o => o.StaticPriority))
             {
-                task.FinishTimeWorstCase = task.ExecutionTime + task.StartTimeWorstCase;
-                foreach (var taskWithHigherPriority in taskSet.Where(o => o.StaticPriority > task.DynamicPriority))
-                {
-                    task.FinishTimeWorstCase += (Math.Ceiling(Decimal.Divide(, taskWithHigherPriority.Period))) -
-                                                (1 + Math.Floor(Decimal.Divide(task.StartTimeWorstCase,
-                                                     taskWithHigherPriority.Period))) *
-                                                taskWithHigherPriority.ExecutionTime;
-                }
+                task.FinishTimeWorstCase = WorstCaseFinishTime(task, taskSet);
             }
         }
 
-        public static void WorstCaseResponseTime(Task task, List<Task> taskSet)
+        public static void WorstCaseResponseTimeAnalysis(List<Task> tasks)
+        {
+            foreach (var task in tasks)
+            {
+                WorstCaseResponseTime(task, tasks);
+            }
+        }
+
+        private static void WorstCaseResponseTime(Task task, List<Task> taskSet)
         {
             var done = false;
             var q = 1;
@@ -65,7 +56,7 @@ namespace Schedule
             while (!done)
             {
                 S.Add(q, WorstCaseStartTime(task, taskSet, q));
-                F.Add(q, WorstCaseFinishTime(task, taskSet, q));
+                F.Add(q, WorstCaseFinishTime(task, taskSet));
                 if (task.FinishTimeWorstCase <= q * task.Period)
                 {
                     done = true;
@@ -78,18 +69,6 @@ namespace Schedule
             }
 
             task.WorstCaseRunTime = findMax(F, task.Period);
-        }
-
-        private static int WorstCaseFinishTime(Task task, List<Task> taskSet, int i)
-        {
-                task.FinishTimeWorstCase = task.ExecutionTime + task.StartTimeWorstCase;
-                foreach (var taskWithHigherPriority in taskSet.Where(o => o.StaticPriority > task.DynamicPriority))
-                {
-                    task.FinishTimeWorstCase += (Math.Ceiling(Decimal.Divide(, taskWithHigherPriority.Period))) -
-                                                (1 + Math.Floor(Decimal.Divide(task.StartTimeWorstCase,
-                                                     taskWithHigherPriority.Period))) *
-                                                taskWithHigherPriority.ExecutionTime;
-                }
         }
 
         private static int findMax(Dictionary<int, int> finishTimes, int taskPeriod)
@@ -106,13 +85,46 @@ namespace Schedule
 
             return max;
         }
-
+        
+        private static int WorstCaseFinishTime(Task task, List<Task> taskSet)
+        {
+            var finishTime = task.ExecutionTime + task.StartTimeWorstCase;
+            var new_finishTime  = finishTime;
+            do
+            {
+                finishTime = new_finishTime;
+                new_finishTime = task.ExecutionTime + task.StartTimeWorstCase;
+                foreach (var taskWithHigherPriority in taskSet.Where(o => o.StaticPriority > task.DynamicPriority))
+                {
+                    new_finishTime += (int) (Math.Ceiling(Decimal.Divide(finishTime, taskWithHigherPriority.Period)) -
+                                             (1 + Math.Floor(Decimal.Divide(task.StartTimeWorstCase,
+                                                  taskWithHigherPriority.Period)))) *
+                                      taskWithHigherPriority.ExecutionTime;
+                }
+            } while (finishTime != new_finishTime);
+            
+            return finishTime;
+        }
+        
         private static int WorstCaseStartTime(Task task, List<Task> taskSet, int q)
         {
-            task.StartTimeWorstCase = task.BlockingTime + (q - 1) * task.ExecutionTime ;
-            foreach (var taskWithHigherPriority in taskSet.Where(o => o.StaticPriority > task.StaticPriority))
+            var startTime = task.BlockingTime + (q - 1) * task.ExecutionTime;
+            var new_StartTime = startTime;
+
+            do
             {
-                task.StartTimeWorstCase += (1/* + Math.Floor(Decimal.Divide(, taskWithHigherPriority.Period))*/) * taskWithHigherPriority.ExecutionTime;
-            }
+                startTime = new_StartTime;
+                new_StartTime = task.BlockingTime + (q - 1) * task.ExecutionTime;
+                foreach (var taskWithHigherPriority in taskSet.Where(o => o.StaticPriority > task.StaticPriority))
+                {
+                    new_StartTime += (int) (1 + Math.Floor(Decimal.Divide(startTime,
+                                                taskWithHigherPriority.Period))) *
+                                     taskWithHigherPriority.ExecutionTime;
+                }
+            } while (startTime != new_StartTime);
+            
+
+            return startTime;
         }
     }
+}
