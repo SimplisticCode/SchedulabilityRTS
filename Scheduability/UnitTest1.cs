@@ -97,7 +97,7 @@ namespace Scheduability
             };
             taskSet.ForEach(o => o.CalcUtilization());
             
-            ResponseTimeAnalysis.blockingTime(taskSet);
+            ResponseTimeAnalysis.BlockingTime(taskSet);
             
             Assert.Equal(taskSet.Single(o => o.Id == '1').BlockingTime, 0);
             Assert.Equal(taskSet.Single(o => o.Id == '2').BlockingTime, 0);
@@ -142,6 +142,17 @@ namespace Scheduability
             Assert.Equal(taskSet.Single(o => o.Id == '7').WorstCaseRunTime, 59);
             Assert.Equal(taskSet.Single(o => o.Id == '8').WorstCaseRunTime, 74);
             Assert.Equal(taskSet.Single(o => o.Id == '9').WorstCaseRunTime, 96); 
+            
+            ResponseTimeAnalysis.ChangePrioritiesToMeetDeadlines(taskSet);
+            Assert.Equal(taskSet.Single(o => o.Id == '1').DynamicPriority, 9);
+            Assert.Equal(taskSet.Single(o => o.Id == '2').DynamicPriority, 8);
+            Assert.Equal(taskSet.Single(o => o.Id == '3').DynamicPriority, 7);
+            Assert.Equal(taskSet.Single(o => o.Id == '4').DynamicPriority, 6);
+            Assert.Equal(taskSet.Single(o => o.Id == '5').DynamicPriority, 5);
+            Assert.Equal(taskSet.Single(o => o.Id == '6').DynamicPriority, 4);
+            Assert.Equal(taskSet.Single(o => o.Id == '7').DynamicPriority, 8);
+            Assert.Equal(taskSet.Single(o => o.Id == '8').DynamicPriority, 8);
+            Assert.Equal(taskSet.Single(o => o.Id == '9').DynamicPriority, 1);  
         }
 
         [Fact]
@@ -161,7 +172,7 @@ namespace Scheduability
             };
             taskSet.ForEach(o => o.CalcUtilization());
             
-            ResponseTimeAnalysis.blockingTime(taskSet);
+            ResponseTimeAnalysis.BlockingTime(taskSet);
             
             Assert.Equal(taskSet.Single(o => o.Id == '1').BlockingTime, 15);
             Assert.Equal(taskSet.Single(o => o.Id == '2').BlockingTime, 15);
@@ -225,7 +236,7 @@ namespace Scheduability
             };
             taskSet.ForEach(o => o.CalcUtilization());
             
-            ResponseTimeAnalysis.blockingTime(taskSet);
+            ResponseTimeAnalysis.BlockingTime(taskSet);
             
             Assert.Equal(taskSet.Single(o => o.Id == '1').BlockingTime, 0);
             Assert.Equal(taskSet.Single(o => o.Id == '2').BlockingTime, 12);
@@ -271,6 +282,71 @@ namespace Scheduability
             Assert.Equal(taskSet.Single(o => o.Id == '7').WorstCaseRunTime, 69);
             Assert.Equal(taskSet.Single(o => o.Id == '8').WorstCaseRunTime, 69);
             Assert.Equal(taskSet.Single(o => o.Id == '9').WorstCaseRunTime, 96); 
-        } 
+        }
+
+
+        [Fact]
+        public void TaskFileReader1()
+        {
+            var fileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),"Task1Import.txt");
+            var taskSet = TaskFileReader.ReadInTasksFromFile(fileName);
+            Assert.Equal(taskSet.Count, 3);
+            Assert.Equal(taskSet[0].ExecutionTime, 20);
+            Assert.Equal(taskSet[0].Period, 70);
+            Assert.Equal(taskSet[0].Deadline, 50);
+            Assert.Equal(taskSet[0].StaticPriority, 3);
+            Assert.Equal(taskSet[0].DynamicPriority, 3);
+            
+            
+            Assert.Equal(taskSet[1].ExecutionTime, 20);
+            Assert.Equal(taskSet[1].Period, 80);
+            Assert.Equal(taskSet[1].Deadline, 80);
+            Assert.Equal(taskSet[1].StaticPriority, 2);
+            Assert.Equal(taskSet[1].DynamicPriority, 3);
+            
+            Assert.Equal(taskSet[2].ExecutionTime, 35);
+            Assert.Equal(taskSet[2].Period, 200);
+            Assert.Equal(taskSet[2].Deadline, 100);
+            Assert.Equal(taskSet[2].StaticPriority, 1);
+            Assert.Equal(taskSet[2].DynamicPriority, 2);
+
+
+           var isScheduable = ResponseTimeAnalysis.FeasibilityUsingResponseTimeAnalysis(taskSet);
+           Assert.True(isScheduable);
+        }
+
+
+        [Fact]
+        public void PreemptionDeadline()
+        {
+            var fileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),"Task2Import.txt");
+            var taskSet = TaskFileReader.ReadInTasksFromFile(fileName);
+
+            ResponseTimeAnalysis.ChangePrioritiesToMeetDeadlines(taskSet);
+            var isScheduable = ResponseTimeAnalysis.FeasibilityUsingResponseTimeAnalysis(taskSet);
+            Assert.True(isScheduable);
+        }
+        
+        
+        [Fact]
+        public void TaskFileReader2()
+        {
+            var fileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),"Task3Import.txt");
+            var taskSet = TaskFileReader.ReadInTasksFromFile(fileName);
+            Assert.Equal(taskSet.Count, 2);
+            Assert.Equal(taskSet[0].ExecutionTime, 52);
+            Assert.Equal(taskSet[0].Period, 100);
+            Assert.Equal(taskSet[0].Deadline, 110);
+            Assert.Equal(taskSet[0].StaticPriority, 0);
+            Assert.Equal(taskSet[0].DynamicPriority, 0);
+            
+            
+            Assert.Equal(taskSet[1].ExecutionTime, 52);
+            Assert.Equal(taskSet[1].Period, 140);
+            Assert.Equal(taskSet[1].Deadline, 154);
+            Assert.Equal(taskSet[1].StaticPriority, 0);
+            Assert.Equal(taskSet[1].DynamicPriority, 0);
+            
+        }
     }
 }

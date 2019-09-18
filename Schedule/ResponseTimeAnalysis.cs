@@ -12,7 +12,7 @@ namespace Schedule
         //Static and dynamic priority
 
         //Blocking time is if a lower priority task is running and cannot be preempted
-        public static void blockingTime(List<Task> taskSet)
+        public static void BlockingTime(List<Task> taskSet)
         {
             foreach (var task in taskSet.OrderBy(o => o.StaticPriority))
             {
@@ -126,5 +126,50 @@ namespace Schedule
 
             return startTime;
         }
+        
+        public static void ChangePrioritiesToMeetDeadlines(List<Task> tasks)
+        {
+            AssignDynamicPriorities(tasks);//Dynamic Priority should be at least the same as the static priority
+            var maximumPriority = tasks.Max(o => o.StaticPriority);
+            var canSystemBeMadeScheduable = true;
+            while (!FeasibilityUsingResponseTimeAnalysis(tasks) && canSystemBeMadeScheduable)
+            {
+                var tasksThatMissTheirDeadlines = tasks.Where(o => o.WorstCaseRunTime > o.Deadline).ToList();
+                foreach (var task in tasksThatMissTheirDeadlines)
+                {
+                    if (task.DynamicPriority < maximumPriority)
+                    {
+                        task.DynamicPriority += 1;
+                    }
+                    else
+                    {
+                        canSystemBeMadeScheduable = false;
+                    }
+                }
+            }
+        }
+
+        private static void AssignDynamicPriorities(List<Task> tasks)
+        {
+            foreach (var task in tasks)
+            {
+                if (task.DynamicPriority < task.StaticPriority)
+                {
+                    task.DynamicPriority = task.StaticPriority;
+                }
+            }
+        }
+
+        public static bool FeasibilityUsingResponseTimeAnalysis(List<Task> tasks)
+        {
+            BlockingTime(tasks);
+            WorstCaseStartTimeAnalysis(tasks);
+            WorstCaseFinishTime(tasks);
+            WorstCaseResponseTimeAnalysis(tasks);
+            return tasks.TrueForAll(o => o.WorstCaseRunTime <= o.Deadline);
+        }
+        
+        
+        
     }
 }
