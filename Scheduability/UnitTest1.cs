@@ -312,6 +312,8 @@ namespace Scheduability
 
 
            var isScheduable = ResponseTimeAnalysis.FeasibilityUsingResponseTimeAnalysis(taskSet);
+           var exist = ResponseTimeAnalysis.DoesFeasibleScheduleExist(taskSet);
+           Assert.Equal(isScheduable, exist);
            Assert.True(isScheduable);
         }
 
@@ -323,8 +325,10 @@ namespace Scheduability
             var taskSet = TaskFileReader.ReadInTasksFromFile(fileName);
 
             ResponseTimeAnalysis.ChangePrioritiesToMeetDeadlines(taskSet);
-            var isScheduable = ResponseTimeAnalysis.FeasibilityUsingResponseTimeAnalysis(taskSet);
-            Assert.True(isScheduable);
+            var isScheduleable = ResponseTimeAnalysis.FeasibilityUsingResponseTimeAnalysis(taskSet);
+            var exist = ResponseTimeAnalysis.DoesFeasibleScheduleExist(taskSet);
+            Assert.Equal(isScheduleable, exist);
+            Assert.True(isScheduleable);
         }
         
         
@@ -346,7 +350,9 @@ namespace Scheduability
             Assert.Equal(taskSet[1].Deadline, 154);
             Assert.Equal(taskSet[1].StaticPriority, 0);
             Assert.Equal(taskSet[1].DynamicPriority, 0);
-            
+
+            var exist = ResponseTimeAnalysis.DoesFeasibleScheduleExist(taskSet);
+            var a = 1;
         }
     }
 }

@@ -85,11 +85,11 @@ namespace Schedule
 
             return max;
         }
-        
+
         private static int WorstCaseFinishTime(Task task, List<Task> taskSet)
         {
             var finishTime = task.ExecutionTime + task.StartTimeWorstCase;
-            var new_finishTime  = finishTime;
+            var new_finishTime = finishTime;
             do
             {
                 finishTime = new_finishTime;
@@ -102,10 +102,10 @@ namespace Schedule
                                       taskWithHigherPriority.ExecutionTime;
                 }
             } while (finishTime != new_finishTime);
-            
+
             return finishTime;
         }
-        
+
         private static int WorstCaseStartTime(Task task, List<Task> taskSet, int q)
         {
             var startTime = task.BlockingTime + (q - 1) * task.ExecutionTime;
@@ -122,14 +122,14 @@ namespace Schedule
                                      taskWithHigherPriority.ExecutionTime;
                 }
             } while (startTime != new_StartTime);
-            
+
 
             return startTime;
         }
-        
+
         public static void ChangePrioritiesToMeetDeadlines(List<Task> tasks)
         {
-            AssignDynamicPriorities(tasks);//Dynamic Priority should be at least the same as the static priority
+            AssignDynamicPriorities(tasks); //Dynamic Priority should be at least the same as the static priority
             var maximumPriority = tasks.Max(o => o.StaticPriority);
             var canSystemBeMadeScheduable = true;
             while (!FeasibilityUsingResponseTimeAnalysis(tasks) && canSystemBeMadeScheduable)
@@ -149,6 +149,19 @@ namespace Schedule
             }
         }
 
+        /// <summary>
+        /// This function takes a list of tasks and assign them with a static priority after the Deadline Monotonic principle
+        /// It thereafter calculate the different times 
+        /// </summary>
+        /// <param name="tasks"></param>
+        /// <returns></returns>
+        public static bool FindFeasibleScheduleIfExist(List<Task> tasks)
+        {
+            DeadlineMonotonicPriorityAssignment(tasks);
+            ChangePrioritiesToMeetDeadlines(tasks);
+            return tasks.TrueForAll(o => o.WorstCaseRunTime <= o.Deadline);
+        }
+
         private static void AssignDynamicPriorities(List<Task> tasks)
         {
             foreach (var task in tasks)
@@ -160,6 +173,15 @@ namespace Schedule
             }
         }
 
+        private static void DeadlineMonotonicPriorityAssignment(List<Task> tasks)
+        {
+            var i = 1;
+            foreach (var task in tasks.OrderByDescending(o => o.Deadline))
+            {
+                task.StaticPriority = i++;
+            }
+        }
+
         public static bool FeasibilityUsingResponseTimeAnalysis(List<Task> tasks)
         {
             BlockingTime(tasks);
@@ -168,8 +190,5 @@ namespace Schedule
             WorstCaseResponseTimeAnalysis(tasks);
             return tasks.TrueForAll(o => o.WorstCaseRunTime <= o.Deadline);
         }
-        
-        
-        
     }
 }
