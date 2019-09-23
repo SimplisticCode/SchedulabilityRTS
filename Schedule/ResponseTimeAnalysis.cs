@@ -127,9 +127,9 @@ namespace Schedule
             return startTime;
         }
 
-        public static void ChangePrioritiesToMeetDeadlines(List<Task> tasks)
+        public static void ChangeDynamicPrioritiesToMeetDeadlines(List<Task> tasks)
         {
-            AssignDynamicPriorities(tasks); //Dynamic Priority should be at least the same as the static priority
+            PriorityAssigner.AssignDynamicPriorities(tasks); //Dynamic Priority should be at least the same as the static priority
             var maximumPriority = tasks.Max(o => o.StaticPriority);
             var canSystemBeMadeScheduable = true;
             while (!FeasibilityUsingResponseTimeAnalysis(tasks) && canSystemBeMadeScheduable)
@@ -155,31 +155,18 @@ namespace Schedule
         /// </summary>
         /// <param name="tasks"></param>
         /// <returns></returns>
-        public static bool FindFeasibleScheduleIfExist(List<Task> tasks)
+        public static bool DoesFeasibleScheduleExist(List<Task> tasks)
         {
-            DeadlineMonotonicPriorityAssignment(tasks);
-            ChangePrioritiesToMeetDeadlines(tasks);
+            PriorityAssigner.DeadlineMonotonicPriorityAssignment(tasks);
+            ChangeDynamicPrioritiesToMeetDeadlines(tasks);
             return tasks.TrueForAll(o => o.WorstCaseRunTime <= o.Deadline);
         }
 
-        private static void AssignDynamicPriorities(List<Task> tasks)
-        {
-            foreach (var task in tasks)
-            {
-                if (task.DynamicPriority < task.StaticPriority)
-                {
-                    task.DynamicPriority = task.StaticPriority;
-                }
-            }
-        }
 
-        private static void DeadlineMonotonicPriorityAssignment(List<Task> tasks)
+        public static bool FeasibilityStudy(List<Task> tasks)
         {
-            var i = 1;
-            foreach (var task in tasks.OrderByDescending(o => o.Deadline))
-            {
-                task.StaticPriority = i++;
-            }
+            ChangeDynamicPrioritiesToMeetDeadlines(tasks);
+            return tasks.TrueForAll(o => o.WorstCaseRunTime <= o.Deadline);
         }
 
         public static bool FeasibilityUsingResponseTimeAnalysis(List<Task> tasks)
@@ -189,6 +176,25 @@ namespace Schedule
             WorstCaseFinishTime(tasks);
             WorstCaseResponseTimeAnalysis(tasks);
             return tasks.TrueForAll(o => o.WorstCaseRunTime <= o.Deadline);
+        }
+
+        public static bool PerformScheduabilityStudy(List<Task> taskSet, int numberOfPropertiesSpecificed)
+        {
+            var isTaskScheduable = false;
+            switch (numberOfPropertiesSpecificed)
+            {
+                case 5:
+                    isTaskScheduable = FeasibilityUsingResponseTimeAnalysis(taskSet);
+                    break;
+                case 4:
+                    isTaskScheduable = FeasibilityStudy(taskSet);
+                    break;
+                default:
+                    isTaskScheduable = DoesFeasibleScheduleExist(taskSet);
+                    break;
+            }
+
+            return isTaskScheduable;
         }
     }
 }

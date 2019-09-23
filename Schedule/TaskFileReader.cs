@@ -7,23 +7,25 @@ namespace Schedule
 {
     public class TaskFileReader
     {
-        public static List<Task>ReadInTasksFromFile(string filename)
+        public static ReadInDto ReadInTasksFromFile(string filename)
         {
-            var result = new List<Task>();
+            var result = new ReadInDto();
+            var tasks = new List<Task>();
 
             using (StreamReader file = new StreamReader(filename))
             {
                 var ln = file.ReadLine();
                 var numberOfTasks = int.Parse(ln.Split(",").First());
-                var numberOfProperties = int.Parse(ln.Split(",").Skip(1).First());
+                result.NumberOfPropertiesSpecificed = int.Parse(ln.Split(",").Skip(1).First());
  
                 for (int i = 0; i < numberOfTasks; i++)
                 {
-                    var taskFromString = createTaskFromString(file.ReadLine(), numberOfProperties);
-                    result.Add(taskFromString);
+                    var taskFromString = createTaskFromString(file.ReadLine(), result.NumberOfPropertiesSpecificed);
+                    tasks.Add(taskFromString);
                 }
             }
-
+            tasks.ForEach(o => o.CalcUtilization());
+            result.tasks = tasks;
             return result;
         }
 
@@ -47,5 +49,11 @@ namespace Schedule
             }
             return task;
         }
+    }
+
+    public class ReadInDto
+    {
+        public List<Task> tasks { get; set; }
+        public int NumberOfPropertiesSpecificed { get; set; }
     }
 }

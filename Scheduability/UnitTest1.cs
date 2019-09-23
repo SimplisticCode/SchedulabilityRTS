@@ -143,7 +143,7 @@ namespace Scheduability
             Assert.Equal(taskSet.Single(o => o.Id == '8').WorstCaseRunTime, 74);
             Assert.Equal(taskSet.Single(o => o.Id == '9').WorstCaseRunTime, 96); 
             
-            ResponseTimeAnalysis.ChangePrioritiesToMeetDeadlines(taskSet);
+            ResponseTimeAnalysis.ChangeDynamicPrioritiesToMeetDeadlines(taskSet);
             Assert.Equal(taskSet.Single(o => o.Id == '1').DynamicPriority, 9);
             Assert.Equal(taskSet.Single(o => o.Id == '2').DynamicPriority, 8);
             Assert.Equal(taskSet.Single(o => o.Id == '3').DynamicPriority, 7);
@@ -324,7 +324,7 @@ namespace Scheduability
             var fileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),"Task2Import.txt");
             var taskSet = TaskFileReader.ReadInTasksFromFile(fileName);
 
-            ResponseTimeAnalysis.ChangePrioritiesToMeetDeadlines(taskSet);
+            ResponseTimeAnalysis.ChangeDynamicPrioritiesToMeetDeadlines(taskSet);
             var isScheduleable = ResponseTimeAnalysis.FeasibilityUsingResponseTimeAnalysis(taskSet);
             var exist = ResponseTimeAnalysis.DoesFeasibleScheduleExist(taskSet);
             Assert.Equal(isScheduleable, exist);

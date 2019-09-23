@@ -21,5 +21,11 @@ namespace Schedule
         {
             this.Utilization = decimal.Divide(ExecutionTime, Period);
         }
+
+        public override string ToString()
+        {
+            return $"Task {Id} has a worst case response time of {WorstCaseRunTime}. It has a deadline of {Deadline}. Static priority {StaticPriority}. Dynamic Priority {DynamicPriority}";
+            ;
+        }
     }
 }
