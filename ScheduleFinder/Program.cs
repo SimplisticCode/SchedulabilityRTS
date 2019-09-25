@@ -32,11 +32,12 @@ namespace ScheduleFinder
             var fileName = "Test";
             GenerateResultFile(taskSet, isTaskScheduable, fileName);
 
-            if (!allowPreemption)
+            Console.WriteLine(isTaskScheduable ? "The task set is scheduleable" : "No feasible assignment found.");
+            foreach (var task in taskSet)
             {
-                var highestPriority = taskSet.Max(o => o.StaticPriority);
-                taskSet.ForEach(o => o.DynamicPriority = highestPriority);
-            }
+                Console.WriteLine(task.ToString());
+            } 
+            
 
         }
 

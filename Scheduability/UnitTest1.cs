@@ -289,7 +289,8 @@ namespace Scheduability
         public void TaskFileReader1()
         {
             var fileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),"Task1Import.txt");
-            var taskSet = TaskFileReader.ReadInTasksFromFile(fileName);
+            var resultReadInDto  = TaskFileReader.ReadInTasksFromFile(fileName);
+            var taskSet = resultReadInDto.tasks;
             Assert.Equal(taskSet.Count, 3);
             Assert.Equal(taskSet[0].ExecutionTime, 20);
             Assert.Equal(taskSet[0].Period, 70);
@@ -322,8 +323,8 @@ namespace Scheduability
         public void PreemptionDeadline()
         {
             var fileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),"Task2Import.txt");
-            var taskSet = TaskFileReader.ReadInTasksFromFile(fileName);
-
+            var resultReadInDto  = TaskFileReader.ReadInTasksFromFile(fileName);
+            var taskSet = resultReadInDto.tasks;
             ResponseTimeAnalysis.ChangeDynamicPrioritiesToMeetDeadlines(taskSet);
             var isScheduleable = ResponseTimeAnalysis.FeasibilityUsingResponseTimeAnalysis(taskSet);
             var exist = ResponseTimeAnalysis.DoesFeasibleScheduleExist(taskSet);
@@ -336,7 +337,8 @@ namespace Scheduability
         public void TaskFileReader2()
         {
             var fileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),"Task3Import.txt");
-            var taskSet = TaskFileReader.ReadInTasksFromFile(fileName);
+            var resultReadInDto  = TaskFileReader.ReadInTasksFromFile(fileName);
+            var taskSet = resultReadInDto.tasks;
             Assert.Equal(taskSet.Count, 2);
             Assert.Equal(taskSet[0].ExecutionTime, 52);
             Assert.Equal(taskSet[0].Period, 100);
@@ -351,8 +353,49 @@ namespace Scheduability
             Assert.Equal(taskSet[1].StaticPriority, 0);
             Assert.Equal(taskSet[1].DynamicPriority, 0);
 
-            var exist = ResponseTimeAnalysis.DoesFeasibleScheduleExist(taskSet);
+            var exist = ResponseTimeAnalysis.PerformScheduabilityStudy(taskSet, resultReadInDto.NumberOfPropertiesSpecificed);
             var a = 1;
+        }
+        
+        [Fact]
+        public void OnlyScheduleableUsingPreemption()
+        {
+            var fileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),"preempt.txt");
+            var resultReadInDto  = TaskFileReader.ReadInTasksFromFile(fileName);
+            var taskSet = resultReadInDto.tasks;
+            
+            //non-preemptive scheduling
+            taskSet.ForEach(o => o.DynamicPriority = taskSet.Max(x=> x.StaticPriority));
+
+            var scheduleableUsingNonPreemption = ResponseTimeAnalysis.FeasibilityUsingResponseTimeAnalysis(taskSet);
+            Assert.False(scheduleableUsingNonPreemption);
+            
+            //preemptive scheduling - reset dynamic priorities
+            taskSet.ForEach(o => o.DynamicPriority = 1);
+            var scheduleableUsingPreemption = ResponseTimeAnalysis.FeasibilityStudy(taskSet);
+            Assert.True(scheduleableUsingPreemption);
+
+        }
+        
+   
+        [Fact]
+        public void OnlyScheduleableUsingNONPreemption()
+        {
+            var fileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),"nonpreempt.txt");
+            var resultReadInDto  = TaskFileReader.ReadInTasksFromFile(fileName);
+            var taskSet = resultReadInDto.tasks;
+            
+            //non-preemptive scheduling
+            taskSet.ForEach(o => o.DynamicPriority = taskSet.Max(x=> x.StaticPriority));
+
+            var scheduleableUsingNonPreemption = ResponseTimeAnalysis.FeasibilityUsingResponseTimeAnalysis(taskSet);
+            Assert.True(scheduleableUsingNonPreemption);
+            
+            //preemptive scheduling - reset dynamic priorities
+            taskSet.ForEach(o => o.DynamicPriority = 1);
+            var scheduleableUsingPreemption = ResponseTimeAnalysis.FeasibilityStudy(taskSet);
+            Assert.False(scheduleableUsingPreemption);
+
         }
     }
 }
