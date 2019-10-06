@@ -23,6 +23,6 @@ namespace Schedule
             {
                 task.StaticPriority = i++;
             }
-        } 
+        }
     }
 }

@@ -151,6 +151,7 @@ namespace Schedule
 
         /// <summary>
         /// This function takes a list of tasks and assign them with a static priority after the Deadline Monotonic principle
+        /// It changes the dynamic priorities of the task to see if the task set can be made scheduleable
         /// It thereafter calculate the different times 
         /// </summary>
         /// <param name="tasks"></param>

@@ -12,7 +12,7 @@ namespace Schedule
             var result = new ReadInDto();
             var tasks = new List<Task>();
 
-            using (StreamReader file = new StreamReader(filename))
+            using (var file = new StreamReader(filename))
             {
                 var ln = file.ReadLine();
                 var numberOfTasks = int.Parse(ln.Split(",").First());

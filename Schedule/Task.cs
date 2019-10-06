@@ -1,3 +1,5 @@
+using System;
+
 namespace Schedule
 {
     public class Task
@@ -9,7 +11,6 @@ namespace Schedule
         public int DynamicPriority { get; set; }
         public int ExecutionTime{ get; set; }
         public decimal Utilization { get; set; }
-        
         public int Offset { get; set; }
         public int Deadline { get; set; }
         public int BlockingTime { get; set; }

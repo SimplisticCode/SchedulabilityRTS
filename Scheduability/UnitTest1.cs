@@ -343,18 +343,24 @@ namespace Scheduability
             Assert.Equal(taskSet[0].ExecutionTime, 52);
             Assert.Equal(taskSet[0].Period, 100);
             Assert.Equal(taskSet[0].Deadline, 110);
-            Assert.Equal(taskSet[0].StaticPriority, 0);
+            Assert.Equal(0, taskSet[0].StaticPriority);
             Assert.Equal(taskSet[0].DynamicPriority, 0);
             
             
-            Assert.Equal(taskSet[1].ExecutionTime, 52);
-            Assert.Equal(taskSet[1].Period, 140);
-            Assert.Equal(taskSet[1].Deadline, 154);
-            Assert.Equal(taskSet[1].StaticPriority, 0);
-            Assert.Equal(taskSet[1].DynamicPriority, 0);
+            Assert.Equal(52, taskSet[1].ExecutionTime);
+            Assert.Equal(140, taskSet[1].Period);
+            Assert.Equal(154, taskSet[1].Deadline);
+            Assert.Equal(0, taskSet[1].StaticPriority);
+            Assert.Equal(0, taskSet[1].DynamicPriority);
 
             var exist = ResponseTimeAnalysis.PerformScheduabilityStudy(taskSet, resultReadInDto.NumberOfPropertiesSpecificed);
-            var a = 1;
+
+            var id = 1;
+            foreach (var task in taskSet)
+            {
+                task.Id = Convert.ToChar(id++);
+            }
+            EarliestDeadlineFirst.Simulate(taskSet);
         }
         
         [Fact]
@@ -371,8 +377,8 @@ namespace Scheduability
             Assert.False(scheduleableUsingNonPreemption);
             
             //preemptive scheduling - reset dynamic priorities
-            taskSet.ForEach(o => o.DynamicPriority = 1);
-            var scheduleableUsingPreemption = ResponseTimeAnalysis.FeasibilityStudy(taskSet);
+            taskSet.ForEach(o => o.DynamicPriority = o.StaticPriority);
+            var scheduleableUsingPreemption = ResponseTimeAnalysis.FeasibilityUsingResponseTimeAnalysis(taskSet);
             Assert.True(scheduleableUsingPreemption);
 
         }
@@ -392,10 +398,111 @@ namespace Scheduability
             Assert.True(scheduleableUsingNonPreemption);
             
             //preemptive scheduling - reset dynamic priorities
-            taskSet.ForEach(o => o.DynamicPriority = 1);
-            var scheduleableUsingPreemption = ResponseTimeAnalysis.FeasibilityStudy(taskSet);
+            taskSet.ForEach(o => o.DynamicPriority = o.StaticPriority);
+            var scheduleableUsingPreemption = ResponseTimeAnalysis.FeasibilityUsingResponseTimeAnalysis(taskSet);
             Assert.False(scheduleableUsingPreemption);
 
+        }
+        
+        
+        
+        [Fact]
+        public void TaskBlockingByResorce()
+        {
+            
+            var taskSet = new List<Task>
+            {
+                new Task {ExecutionTime = 2, Period = 5, Id = 'A', StaticPriority = 5},
+                new Task {ExecutionTime = 4, Period = 20, Id = 'B', StaticPriority = 4},
+                new Task {ExecutionTime = 4, Period = 20, Id = 'C', StaticPriority = 3},
+                new Task {ExecutionTime = 5, Period = 200, Id = 'D', StaticPriority = 2},
+                new Task {ExecutionTime = 5, Period = 200, Id = 'E', StaticPriority = 1}
+            };
+            
+            var resources = new List<Resource>();
+
+            var X = new Resource
+            {
+                Name = "X",
+                tasks = new List<TaskUsingResource>
+                {
+                    new TaskUsingResource
+                    {
+                        Task = taskSet.Find(o => o.Id == 'B'),
+                        UsageTime = 2
+                    },
+                    new TaskUsingResource
+                    {
+                        Task = taskSet.Find(o => o.Id == 'D'),
+                        UsageTime = 3
+                    },
+                    new TaskUsingResource
+                    {
+                        Task = taskSet.Find(o => o.Id == 'E'),
+                        UsageTime = 1
+                    }
+                }
+            };
+            
+            var Y = new Resource
+            {
+                Name = "Y",
+                tasks = new List<TaskUsingResource>
+                {
+                    new TaskUsingResource
+                    {
+                        Task = taskSet.Find(o => o.Id == 'C'),
+                        UsageTime = 4
+                    }
+                }
+            };
+            
+            var Z = new Resource
+            {
+                Name = "Z",
+                tasks = new List<TaskUsingResource>
+                {
+                    new TaskUsingResource
+                    {
+                        Task = taskSet.Find(o => o.Id == 'D'),
+                        UsageTime = 1
+                    },
+                    new TaskUsingResource
+                    {
+                        Task = taskSet.Find(o => o.Id == 'E'),
+                        UsageTime = 2
+                    }
+                }
+            };
+            
+            resources.Add(X);
+            resources.Add(Y);
+            resources.Add(Z);
+
+            RealTimeSystem s = new RealTimeSystem
+            {
+                Tasks = taskSet,
+                Resources = resources
+            };
+
+            foreach (var task in taskSet)
+            {
+                var blockingTimeNCPS = s.BlockingTimeOnAResourceNCPS(task);
+                task.BlockingTime = blockingTimeNCPS;
+            }
+            ResponseTimeAnalysis.WorstCaseStartTimeAnalysis(taskSet);
+            ResponseTimeAnalysis.WorstCaseFinishTime(taskSet);
+            ResponseTimeAnalysis.WorstCaseResponseTimeAnalysis(taskSet);
+ 
+            foreach (var task in taskSet)
+            {
+                var blockingTimeNCPS = s.BlockingTimeOnAResourcePriorityCeiling(task);
+                task.BlockingTime = blockingTimeNCPS;
+            }
+            ResponseTimeAnalysis.WorstCaseStartTimeAnalysis(taskSet);
+            ResponseTimeAnalysis.WorstCaseFinishTime(taskSet);
+            ResponseTimeAnalysis.WorstCaseResponseTimeAnalysis(taskSet);
+            var i = 0;
         }
     }
 }
