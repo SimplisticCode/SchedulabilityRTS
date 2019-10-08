@@ -1,10 +1,8 @@
-using System;
-
-namespace Schedule
+namespace Schedule.Data
 {
     public class Task
     {
-        public char Id { get; set; }
+        public string Id { get; set; }
         public int Period { get; set; }
         public int ResponseTime { get; set; }
         public int StaticPriority { get; set; }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
+using Schedule.Data;
 
 namespace Schedule
 {
@@ -10,15 +11,15 @@ namespace Schedule
     {
         public static void Simulate(List<Task> taskSet)
         {
-            var hyperPeriod = 6000;
+            var hyperPeriod = Calculator.Calculator.FindHyperPeriod(taskSet);
             var tasks = generateTaskInHyperPeriod(taskSet, hyperPeriod);
             var resultFile = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),"Schedule.txt");
             runSimulation(tasks, hyperPeriod, resultFile);
         }
 
-        private static void runSimulation(List<Task> tasks, int hyperPeriod, string resultFile)
+        private static void runSimulation(List<Task> tasks, long hyperPeriod, string resultFile)
         {
-            var releasedTask = new List<Task>();
+            var queueOfReadyTask = new List<Task>();
             var doneTask = new List<Task>();
             var time = 0;
             using (var writer = new StreamWriter(resultFile))
@@ -31,17 +32,17 @@ namespace Schedule
                     {
                         task.DynamicPriority = task.Deadline;
                         tasks.Remove(task);
-                        releasedTask.Add(task);
+                        queueOfReadyTask.Add(task);
                     }
 
-                    releasedTask = releasedTask.OrderBy(o => o.Deadline).ToList();
-                    if (releasedTask.Any())
+                    queueOfReadyTask = queueOfReadyTask.OrderBy(o => o.Deadline).ToList();
+                    if (queueOfReadyTask.Any())
                     {
-                        releasedTask.First().ExecutionTime--;
-                        writer.WriteLine($"Time: {time} execution task is {Char.ToString(releasedTask.First().Id)} with a priority/deadline of {releasedTask.First().Deadline}");
-                        doneTask.AddRange(releasedTask.Where(o => o.ExecutionTime == 0));
-                        releasedTask.RemoveAll(o => o.ExecutionTime == 0);
-                        if (releasedTask.Any(o => o.Deadline < time))
+                        queueOfReadyTask.First().ExecutionTime--;
+                        writer.WriteLine($"Time: {time} execution task is {queueOfReadyTask.First().Id} with a priority/deadline of {queueOfReadyTask.First().Deadline}");
+                        doneTask.AddRange(queueOfReadyTask.Where(o => o.ExecutionTime == 0));
+                        queueOfReadyTask.RemoveAll(o => o.ExecutionTime == 0);
+                        if (queueOfReadyTask.Any(o => o.Deadline < time))
                         {
                             throw new Exception("Task set is not scheduleable");
                         }
@@ -53,7 +54,7 @@ namespace Schedule
             }
         }
 
-        private static List<Task> generateTaskInHyperPeriod(List<Task> tasks, int hyperPeriod)
+        private static List<Task> generateTaskInHyperPeriod(List<Task> tasks, long hyperPeriod)
         {
             var result = new List<Task>();
             foreach (var task in tasks)

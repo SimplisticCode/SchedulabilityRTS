@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using Schedule.Data;
 
 namespace Schedule
 {
-    public class RealTimeSystem
+    public class SystemWithSharedResources
     {
         public List<Task> Tasks { get; set; }
         public List<Resource> Resources { get; set; }

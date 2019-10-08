@@ -1,6 +1,4 @@
-using System;
-
-namespace Schedule
+namespace Schedule.Data
 {
     public class TaskUsingResource
     {
