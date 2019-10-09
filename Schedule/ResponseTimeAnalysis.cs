@@ -165,7 +165,7 @@ namespace Schedule
         }
 
 
-        public static bool FeasibilityStudy(List<Task> tasks)
+        private static bool FeasibilityStudy(List<Task> tasks)
         {
             ChangeDynamicPrioritiesToMeetDeadlines(tasks);
             return tasks.TrueForAll(o => o.WorstCaseRunTime <= o.Deadline);
@@ -185,14 +185,21 @@ namespace Schedule
             var isTaskScheduable = false;
             switch (numberOfPropertiesSpecificed)
             {
+                //Program 1
                 case 5:
                     isTaskScheduable = FeasibilityUsingResponseTimeAnalysis(taskSet);
                     break;
+                //Program 2
                 case 4:
                     isTaskScheduable = FeasibilityStudy(taskSet);
                     break;
-                default:
+                //Program 3
+                case 3:
                     isTaskScheduable = DoesFeasibleScheduleExist(taskSet);
+                    break;
+                //EDF simulation
+                default:
+                    EarliestDeadlineFirst.Simulate(taskSet);
                     break;
             }
 

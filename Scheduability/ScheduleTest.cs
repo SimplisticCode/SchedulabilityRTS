@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Scheduability
 {
-    public class UnitTest1
+    public class ScheduleTest
     {
         [Fact]
         public void TestA()
@@ -367,9 +367,12 @@ namespace Scheduability
         [Fact]
         public void OnlyScheduleableUsingPreemption()
         {
-            var fileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),"preempt.txt");
-            var resultReadInDto  = TaskFileReader.ReadInTasksFromFile(fileName);
-            var taskSet = resultReadInDto.tasks;
+            var taskSet = new List<Task>
+            {
+                new Task {ExecutionTime = 20, Period = 70, Deadline = 30, StaticPriority = 3, Id = "A"},
+                new Task {ExecutionTime = 20, Period = 80, Deadline = 80, StaticPriority = 2, Id = "B"},
+                new Task {ExecutionTime = 35, Period = 200, Deadline = 115, StaticPriority = 1, Id = "C"},
+            };
             
             //non-preemptive scheduling
             taskSet.ForEach(o => o.DynamicPriority = taskSet.Max(x=> x.StaticPriority));
@@ -382,33 +385,45 @@ namespace Scheduability
             var scheduleableUsingPreemption = ResponseTimeAnalysis.FeasibilityUsingResponseTimeAnalysis(taskSet);
             Assert.True(scheduleableUsingPreemption);
 
+            var resultFile = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),"preempt.txt");
+
+            TaskFileReader.CreateTaskFile(taskSet,resultFile);
         }
         
    
         [Fact]
         public void OnlyScheduleableUsingNONPreemption()
         {
-            var fileName = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),"nonpreempt.txt");
-            var resultReadInDto  = TaskFileReader.ReadInTasksFromFile(fileName);
-            var taskSet = resultReadInDto.tasks;
+            var taskSet = new List<Task>
+            {
+                new Task {ExecutionTime = 20, Period = 70, Deadline = 55, StaticPriority = 3, Id = "A"},
+                new Task {ExecutionTime = 20, Period = 80, Deadline = 80, StaticPriority = 2, Id = "B"},
+                new Task {ExecutionTime = 35, Period = 200, Deadline = 100, StaticPriority = 1, Id = "C"},
+            };
+            
+
+            //preemptive scheduling - reset dynamic priorities
+            taskSet.ForEach(o => o.DynamicPriority = o.StaticPriority);
+            var scheduleableUsingPreemption = ResponseTimeAnalysis.FeasibilityUsingResponseTimeAnalysis(taskSet);
+            Assert.False(scheduleableUsingPreemption);
             
             //non-preemptive scheduling
             taskSet.ForEach(o => o.DynamicPriority = taskSet.Max(x=> x.StaticPriority));
 
             var scheduleableUsingNonPreemption = ResponseTimeAnalysis.FeasibilityUsingResponseTimeAnalysis(taskSet);
             Assert.True(scheduleableUsingNonPreemption);
-            
-            //preemptive scheduling - reset dynamic priorities
-            taskSet.ForEach(o => o.DynamicPriority = o.StaticPriority);
-            var scheduleableUsingPreemption = ResponseTimeAnalysis.FeasibilityUsingResponseTimeAnalysis(taskSet);
-            Assert.False(scheduleableUsingPreemption);
+
+
+            var resultFile = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),"nonpreempt.txt");
+
+            TaskFileReader.CreateTaskFile(taskSet,resultFile);
 
         }
         
         
         
         [Fact]
-        public void TaskBlockingByResorce()
+        public void TaskBlockingByResource()
         {
             
             var taskSet = new List<Task>

@@ -27,6 +27,7 @@ namespace ScheduleFinder
             
             var readInTasks = TaskFileReader.ReadInTasksFromFile(path);
             var taskSet = readInTasks.tasks; 
+            //This is all the 3 programs
             var isTaskScheduable =  ResponseTimeAnalysis.PerformScheduabilityStudy(taskSet, readInTasks.NumberOfPropertiesSpecificed);
 
 

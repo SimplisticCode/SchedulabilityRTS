@@ -30,6 +30,18 @@ namespace Schedule
             return result;
         }
 
+        public static void CreateTaskFile(List<Task> tasks, string filename)
+        {
+            using (var file = new StreamWriter(filename))
+            {
+                file.WriteLine($"{tasks.Count} 5");
+                foreach (var task in tasks)
+                {
+                    file.WriteLine($"{task.ExecutionTime} {task.Period} {task.Deadline} {task.StaticPriority} {task.DynamicPriority}");
+                }
+            } 
+        }
+        
         private static Task createTaskFromString(string readLine, int numberOfProperties)
         {
             var arr = readLine.Split(",");
@@ -51,6 +63,7 @@ namespace Schedule
             return task;
         }
     }
+    
 
     public class ReadInDto
     {

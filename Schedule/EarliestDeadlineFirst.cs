@@ -7,14 +7,22 @@ using Schedule.Data;
 
 namespace Schedule
 {
-    public class EarliestDeadlineFirst
+    public static class EarliestDeadlineFirst
     {
         public static void Simulate(List<Task> taskSet)
         {
             var hyperPeriod = Calculator.Calculator.FindHyperPeriod(taskSet);
             var tasks = generateTaskInHyperPeriod(taskSet, hyperPeriod);
             var resultFile = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),"Schedule.txt");
-            runSimulation(tasks, hyperPeriod, resultFile);
+            taskSet.ForEach(o => o.CalcUtilization());
+            if (taskSet.Sum(o => o.Utilization) <= 1)
+            {
+                runSimulation(tasks, hyperPeriod, resultFile);
+            }
+            else
+            {
+                //Task set is not schedulable
+            }
         }
 
         private static void runSimulation(List<Task> tasks, long hyperPeriod, string resultFile)
@@ -46,6 +54,10 @@ namespace Schedule
                         {
                             throw new Exception("Task set is not scheduleable");
                         }
+                    }
+                    else
+                    {
+                        writer.WriteLine($"Time: {time} idle");
                     }
                     
                     time++;
